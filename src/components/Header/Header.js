@@ -1,18 +1,38 @@
-import React from 'react';
-import clsx from 'clsx';
-import { Rss, Sun, Moon } from 'react-feather';
+"use client";
+import React from "react";
+import clsx from "clsx";
+import { Rss, Sun, Moon } from "react-feather";
+import Cookie from "js-cookie";
+import {
+  LIGHT_TOKENS,
+  DARK_TOKENS,
+  COLOR_THEME_COOKIE_NAME,
+} from "@/constants";
 
-import Logo from '@/components/Logo';
-import VisuallyHidden from '@/components/VisuallyHidden';
+import Logo from "@/components/Logo";
+import VisuallyHidden from "@/components/VisuallyHidden";
 
-import styles from './Header.module.css';
+import styles from "./Header.module.css";
 
-function Header({ theme, className, ...delegated }) {
+function Header({ initalTheme, className, ...delegated }) {
+  const [theme, setTheme] = React.useState(initalTheme);
+
+  const handleClick = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    Cookie.set(COLOR_THEME_COOKIE_NAME, newTheme, { expires: 1000 });
+
+    const newTokens = newTheme === "light" ? LIGHT_TOKENS : DARK_TOKENS;
+
+    const root = document.documentElement;
+    root.setAttribute("data-color-theme", newTheme);
+    Object.entries(newTokens).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+    });
+    //[['--color-text', 'white'], [], [], ]
+  };
   return (
-    <header
-      className={clsx(styles.wrapper, className)}
-      {...delegated}
-    >
+    <header className={clsx(styles.wrapper, className)} {...delegated}>
       <Logo />
 
       <div className={styles.actions}>
@@ -21,18 +41,14 @@ function Header({ theme, className, ...delegated }) {
             size="1.5rem"
             style={{
               // Optical alignment
-              transform: 'translate(2px, -2px)',
+              transform: "translate(2px, -2px)",
             }}
           />
-          <VisuallyHidden>
-            View RSS feed
-          </VisuallyHidden>
+          <VisuallyHidden>View RSS feed</VisuallyHidden>
         </button>
-        <button className={styles.action}>
-          <Sun size="1.5rem" />
-          <VisuallyHidden>
-            Toggle dark / light mode
-          </VisuallyHidden>
+        <button onClick={handleClick} className={styles.action}>
+          {theme === "light" ? <Sun size="1.5rem" /> : <Moon size="1.5rem" />}
+          <VisuallyHidden>Toggle dark / light mode</VisuallyHidden>
         </button>
       </div>
     </header>
